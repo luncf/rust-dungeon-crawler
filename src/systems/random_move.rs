@@ -6,13 +6,10 @@ use crate::prelude::*;
 #[read_component(Health)]
 #[read_component(Player)]
 pub fn random_move(ecs: &mut SubWorld, commands: &mut CommandBuffer) {
-    // Why not this way?
-    // let mut movers = <&mut Point>::query().filter(component::<MovingRandomly>());
-
-    let mut movers = <(Entity, &Point, &MovingRandomly)>::query();
+    let mut movers = <(Entity, &Point)>::query().filter(component::<MovingRandomly>());
     let mut positions = <(Entity, &Point, &Health)>::query();
 
-    movers.iter(ecs).for_each(|(entity, pos, _)| {
+    movers.iter(ecs).for_each(|(entity, pos)| {
         let mut rng = RandomNumberGenerator::new();
         let destination = match rng.range(0, 4) {
             0 => Point::new(-1, 0),
