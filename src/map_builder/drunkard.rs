@@ -5,13 +5,7 @@ pub struct DrunkardsWalkArchitect {}
 
 impl MapArchitect for DrunkardsWalkArchitect {
     fn new(&mut self, rng: &mut RandomNumberGenerator) -> MapBuilder {
-        let mut mb = MapBuilder {
-            map: Map::new(),
-            rooms: Vec::new(),
-            monster_spawns: Vec::new(),
-            player_start: Point::zero(),
-            amulet_start: Point::zero(),
-        };
+        let mut mb = MapBuilder::create_empty();
 
         const NUM_TILES: usize = (SCREEN_WIDTH * SCREEN_HEIGHT) as usize;
         const DESIRED_FLOOR: usize = NUM_TILES / 3;
