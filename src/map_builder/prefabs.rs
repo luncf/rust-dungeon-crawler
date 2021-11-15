@@ -50,7 +50,7 @@ pub fn apply_prefab(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
         if can_place {
             placement = Some(Point::new(dimensions.x1, dimensions.y1));
             let points = dimensions.point_set();
-            mb.monster_spawns.retain(|pt| !points.contains(pt));
+            mb.entity_spawns.retain(|pt| !points.contains(pt));
         }
 
         attempts += 1;
@@ -70,7 +70,7 @@ pub fn apply_prefab(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
                 match c {
                     'M' => {
                         mb.map.tiles[idx] = TileType::Floor;
-                        mb.monster_spawns.push(Point::new(tx, ty));
+                        mb.entity_spawns.push(Point::new(tx, ty));
                     }
                     '-' => mb.map.tiles[idx] = TileType::Floor,
                     '#' => mb.map.tiles[idx] = TileType::Wall,

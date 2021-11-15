@@ -23,7 +23,7 @@ pub trait MapTheme: Sync + Send {
 pub struct MapBuilder {
     pub map: Map,
     pub rooms: Vec<Rect>,
-    pub monster_spawns: Vec<Point>,
+    pub entity_spawns: Vec<Point>,
     pub player_start: Point,
     pub amulet_start: Point,
     pub theme: Box<dyn MapTheme>,
@@ -34,7 +34,7 @@ impl MapBuilder {
         Self {
             map: Map::new(),
             rooms: Vec::new(),
-            monster_spawns: Vec::new(),
+            entity_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
             theme: DungeonTheme::new(),
@@ -85,7 +85,11 @@ impl MapBuilder {
         )
     }
 
-    fn spawn_monsters(&self, start: &Point, rng: &mut RandomNumberGenerator) -> Vec<Point> {
+    fn get_entity_spawn_points(
+        &self,
+        start: &Point,
+        rng: &mut RandomNumberGenerator,
+    ) -> Vec<Point> {
         const NUM_MONSTERS: usize = 50;
         let mut spawnable_tiles: Vec<Point> = self
             .map
