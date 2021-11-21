@@ -58,7 +58,8 @@ pub fn hud(ecs: &SubWorld) {
             "None"
         };
 
-        draw_batch.print(Point::new(3, 2), format!("Weapon: {}", weapon_name));
+        draw_batch.print_color(Point::new(3, 2), "Weapon:", ColorPair::new(YELLOW, BLACK));
+        draw_batch.print(Point::new(11, 2), weapon_name);
     }
 
     // Player items
