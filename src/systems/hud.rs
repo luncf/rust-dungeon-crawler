@@ -77,7 +77,7 @@ pub fn hud(ecs: &SubWorld) {
             })
             .enumerate()
             .for_each(|(i, (_entity, _item, name, _carried))| {
-                draw_batch.print(Point::new(3, 5 + i), format!("{} : {}", i, &name.0));
+                draw_batch.print(Point::new(3, 5 + i), format!("{} : {}", i + 1, &name.0));
                 has_items = true;
             });
 
