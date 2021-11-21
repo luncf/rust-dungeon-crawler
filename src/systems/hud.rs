@@ -6,6 +6,7 @@ use crate::prelude::*;
 #[read_component(Item)]
 #[read_component(Carried)]
 #[read_component(Name)]
+#[read_component(Weapon)]
 pub fn hud(ecs: &SubWorld) {
     let mut draw_batch = DrawBatch::new();
     draw_batch.target(2);
@@ -44,21 +45,44 @@ pub fn hud(ecs: &SubWorld) {
         );
     }
 
+    // Player weapon
+    {
+        let item = <(&Weapon, &Item, &Name, &Carried)>::query()
+            .iter(ecs)
+            .filter(|(_weapon, _item, _name, carried)| carried.0 == player)
+            .find_map(|(_weapon, _item, name, _carried)| Some(name));
+
+        let weapon_name = if let Some(weapon) = item {
+            &weapon.0
+        } else {
+            "None"
+        };
+
+        draw_batch.print(Point::new(3, 2), format!("Weapon: {}", weapon_name));
+    }
+
     // Player items
     {
-        let mut y = 3;
+        let mut has_items = false;
 
-        <(&Item, &Name, &Carried)>::query()
+        <(Entity, &Item, &Name, &Carried)>::query()
             .iter(ecs)
-            .filter(|(_, _, carried)| carried.0 == player)
-            .for_each(|(_, name, _)| {
-                draw_batch.print(Point::new(3, y), format!("{} : {}", y - 2, &name.0));
-                y += 1;
+            .filter(|(entity, _item, _name, carried)| {
+                let mut is_weapon = false;
+                if let Ok(e) = ecs.entry_ref(**entity) {
+                    is_weapon = e.get_component::<Weapon>().is_ok();
+                }
+                !is_weapon && carried.0 == player
+            })
+            .enumerate()
+            .for_each(|(i, (_entity, _item, name, _carried))| {
+                draw_batch.print(Point::new(3, 5 + i), format!("{} : {}", i, &name.0));
+                has_items = true;
             });
 
-        if y > 3 {
+        if has_items {
             draw_batch.print_color(
-                Point::new(3, 2),
+                Point::new(3, 4),
                 "Items carried",
                 ColorPair::new(YELLOW, BLACK),
             );

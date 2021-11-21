@@ -7,6 +7,7 @@ use crate::prelude::*;
 #[write_component(Health)]
 #[read_component(Item)]
 #[read_component(Carried)]
+#[read_component(Weapon)]
 pub fn player_input(
     ecs: &mut SubWorld,
     commands: &mut CommandBuffer,
@@ -78,13 +79,23 @@ fn pick_up_item(ecs: &mut SubWorld, commands: &mut CommandBuffer) -> Point {
         .find_map(|(entity, pos)| Some((*entity, *pos)))
         .unwrap();
 
-    let mut items = <(Entity, &Point)>::query().filter(component::<Item>());
-    items
+    <(Entity, &Item, &Point)>::query()
         .iter(ecs)
-        .filter(|(_, &item_pos)| item_pos == player_pos)
-        .for_each(|(entity, _)| {
+        .filter(|(_entity, _item, &item_pos)| item_pos == player_pos)
+        .for_each(|(entity, _item, _item_pos)| {
             commands.remove_component::<Point>(*entity);
             commands.add_component(*entity, Carried(player));
+
+            if let Ok(e) = ecs.entry_ref(*entity) {
+                if e.get_component::<Weapon>().is_ok() {
+                    <(Entity, &Carried, &Weapon)>::query()
+                        .iter(ecs)
+                        .filter(|(_, carried, _)| carried.0 == player)
+                        .for_each(|(entity, _, _)| {
+                            commands.remove(*entity);
+                        })
+                }
+            }
         });
 
     Point::zero()
@@ -98,17 +109,23 @@ fn use_item(n: usize, ecs: &mut SubWorld, commands: &mut CommandBuffer) -> Point
 
     let carried_item = <(Entity, &Item, &Carried)>::query()
         .iter(ecs)
-        .filter(|(_, _, carried)| carried.0 == player)
+        .filter(|(entity, _, carried)| {
+            let mut is_weapon = false;
+            if let Ok(e) = ecs.entry_ref(**entity) {
+                is_weapon = e.get_component::<Weapon>().is_ok();
+            }
+            !is_weapon && carried.0 == player
+        })
         .enumerate()
         .filter(|(item_count, (_, _, _))| *item_count == n)
         .find_map(|(_, (item, _, _))| Some(*item));
 
-    if let Some(carried_item) = carried_item {
+    if let Some(item) = carried_item {
         commands.push((
             (),
             ActivateItem {
                 used_by: player,
-                item: carried_item,
+                item: item,
             },
         ));
     }
